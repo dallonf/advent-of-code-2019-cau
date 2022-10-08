@@ -1,11 +1,11 @@
 import com.dallonf.ktcause.CodeBundleBuilder
-import java.io.File
+import java.nio.file.Path
 
-class CodeLoader {
+class CodeLoader(private val rootDirectory: Path) {
     val builder = CodeBundleBuilder()
 
     fun addFile(path: String) {
-        val file = File(path)
+        val file = rootDirectory.resolve(path).toFile()
         val text = file.readText()
         builder.addFile(path, text)
     }
