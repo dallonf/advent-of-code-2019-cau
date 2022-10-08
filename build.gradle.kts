@@ -13,6 +13,7 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
+    implementation(files("lib/ktcause-0.1-SNAPSHOT-all.jar"))
 }
 
 tasks.test {
