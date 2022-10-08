@@ -1,43 +1,30 @@
-import com.dallonf.ktcause.Debug.debug
-import com.dallonf.ktcause.LangVm
-import com.dallonf.ktcause.RunResult
-import com.dallonf.ktcause.RuntimeValue
+import com.dallonf.ktcause.*
+import kotlinx.cli.*
 import kotlin.system.exitProcess
 
-fun main() {
-    val vm = LangVm {
-        addFile(
-            "project/init.cau", """
-                function main() {
-                    cause Debug("Hello, Reese!")
-                }
-            """.trimIndent()
-        )
+fun main(args: Array<String>) {
+    val argParser = ArgParser("aoc-cau")
+    val day by argParser.argument(ArgType.Int, "day")
+    val partsArg by argParser.option(ArgType.String, "part", "p").multiple()
+
+    argParser.parse(args)
+
+    val parts = partsArg.ifEmpty { listOf("partOne", "partTwo") }
+
+    val codeLoader = CodeLoader()
+    val filepath = run {
+        val paddedDay = day.toString().padStart(2, '0')
+        "project/puzzles/day${paddedDay}.cau"
+    }
+    codeLoader.addFileWithDependencies(filepath)
+
+    val runner = Runner(LangVm(codeLoader.builder.build()))
+
+    for (part in parts) {
+        println()
+        println("${part}:")
+        runner.run(filepath, part)
     }
 
-    var executionState = vm.executeFunction("project/init.cau", "main", listOf())
-    while (executionState is RunResult.Caused) {
-        val signal = executionState.signal
-
-        val resultValue = when (signal.typeDescriptor.id) {
-            vm.codeBundle.getBuiltinTypeId("Debug") -> {
-                val value = signal.values[0]
-                if (value is RuntimeValue.Text) {
-                    println(value.value)
-                } else {
-                    println(value.debug())
-                }
-                RuntimeValue.Action
-            }
-
-            else -> {
-                throw Error("Unrecognized signal: ${signal.typeDescriptor.id}")
-            }
-        }
-
-        executionState = vm.resumeExecution(resultValue)
-    }
-
-    executionState.expectReturnValue()
     exitProcess(0)
 }
