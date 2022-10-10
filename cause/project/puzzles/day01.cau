@@ -4,13 +4,11 @@ import core/math (divide, floor, subtract)
 
 function fuel_required(mass: Number): Number {
   let result = divide(mass, 3)
-  cause Debug("after divide")
-  cause Debug(result)
   let result = floor(result)
   let result = subtract(result, 2)
   result
 }
 
 function test() {
-  fuel_required(14)
+  fuel_required(100756)
 }
