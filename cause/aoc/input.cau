@@ -2,3 +2,7 @@ import core/stopgap/collections (MaybeStack)
 
 signal NeedInput(path: Text): Text
 signal NeedInputLines(path: Text): MaybeStack
+
+// NOTE: in future versions of the language, it'd be good to treat this
+// as an errorable type (ex. Rust's `Result`)
+signal ParseNumber(text: Text): Number

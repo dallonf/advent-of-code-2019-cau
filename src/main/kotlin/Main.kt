@@ -43,16 +43,32 @@ fun main(args: Array<String>) {
                 rootDirPath.resolve(file)
             }.toSet()
 
-            print(Ansi.ansi().fg(Ansi.Color.RED))
-            Debug.printCompileErrors(runner.vm)
-            print(Ansi.ansi().reset())
+            val compileErrors = runner.vm.codeBundle.compileErrors
+            if (compileErrors.isNotEmpty()) {
+                print(Ansi.ansi().fg(Ansi.Color.RED))
+                println("Found errors:")
+                for (error in compileErrors) {
+                    println()
+                    println(error.debug())
+                    val file = runner.vm.codeBundle.files[error.position.path]!!
+                    val source = file.debugCtx?.let { it.getSourceContext(error.position.breadcrumbs) }
+                    if (source != null) {
+                        println("```")
+                        print(source)
+                        println("```")
+                    } else {
+                        println("Can't show error for ${file.path}")
+                    }
+                }
+                print(Ansi.ansi().reset())
+            }
 
             for (part in parts) {
                 println()
                 println("${part}:")
                 runner.run(filepath, part)
             }
-        } catch (e: Error) {
+        } catch (e: Throwable) {
             print(Ansi.ansi().fg(Ansi.Color.RED))
             e.printStackTrace()
             print(Ansi.ansi().reset())

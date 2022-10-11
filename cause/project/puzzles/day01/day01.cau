@@ -1,7 +1,8 @@
 // Day 1: The Tyranny of the Rocket Equation
 
-import core/math (divide, floor, subtract)
-import aoc/input (NeedInputLines)
+import core/math (add, subtract, divide, floor)
+import core/stopgap/collections (Stack, MaybeStack, Empty)
+import aoc/input (NeedInputLines, ParseNumber)
 
 function fuel_required(mass: Number): Number {
   let result = divide(mass, 3)
@@ -16,7 +17,22 @@ function test() {
 
 function partOne() {
   let input = cause NeedInputLines("day01/puzzleinput.txt")
-  cause Debug(input)
+  let variable result = 0
+  let variable current: MaybeStack = input
+  loop {
+    branch with current {
+      is Empty => break
+      is Stack as current_stack {
+        let mass = branch with current_stack.top {
+          is Text as line => cause ParseNumber(line)
+          else => cause AssumptionBroken("")
+        }
+        set result = add(result, fuel_required(mass))
+        set current = current_stack.next
+      }
+    }
+  }
+  result
 }
 
 function partTwo() {
