@@ -1,7 +1,7 @@
-function partOne() {
+function part_one() {
   1
 }
 
-function partTwo() {
+function part_two() {
   2
 }
