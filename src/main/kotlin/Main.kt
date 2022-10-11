@@ -1,5 +1,7 @@
 import com.dallonf.ktcause.*
 import kotlinx.cli.*
+import org.fusesource.jansi.Ansi
+import org.fusesource.jansi.AnsiConsole
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -8,6 +10,8 @@ import kotlin.io.path.relativeTo
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
+    AnsiConsole.systemInstall()
+
     val argParser = ArgParser("aoc-cau")
     val day by argParser.argument(ArgType.Int, "day")
     val partsArg by argParser.option(ArgType.String, "part", "p").multiple()
@@ -22,30 +26,41 @@ fun main(args: Array<String>) {
     } ?: Paths.get("")
 
     execute@ while (true) {
-        val codeLoader = CodeLoader(rootDirPath)
         val filepath = run {
             val paddedDay = day.toString().padStart(2, '0')
-            "project/puzzles/day${paddedDay}.cau"
+            "project/puzzles/day${paddedDay}/day${paddedDay}.cau"
         }
-        codeLoader.addFileWithDependencies(filepath)
+        var filesToWatch = setOf(rootDirPath.resolve(filepath))
+        try {
+            val codeLoader = CodeLoader(rootDirPath)
+            codeLoader.addFileWithDependencies(filepath)
 
-        val runner = Runner(LangVm(codeLoader.builder.build()))
+            val runner = Runner(LangVm(codeLoader.builder.build()), rootDirPath)
+            filesToWatch = runner.vm.codeBundle.files.keys.mapNotNull { file ->
+                if (file.startsWith("core/")) {
+                    return@mapNotNull null
+                }
+                rootDirPath.resolve(file)
+            }.toSet()
 
-        for (part in parts) {
-            println()
-            println("${part}:")
-            runner.run(filepath, part)
+            print(Ansi.ansi().fg(Ansi.Color.RED))
+            Debug.printCompileErrors(runner.vm)
+            print(Ansi.ansi().reset())
+
+            for (part in parts) {
+                println()
+                println("${part}:")
+                runner.run(filepath, part)
+            }
+        } catch (e: Error) {
+            print(Ansi.ansi().fg(Ansi.Color.RED))
+            e.printStackTrace()
+            print(Ansi.ansi().reset())
         }
 
         println()
 
         val watchService = FileSystems.getDefault().newWatchService()
-        val filesToWatch = runner.vm.codeBundle.files.keys.mapNotNull { file ->
-            if (file.startsWith("core/")) {
-                return@mapNotNull null
-            }
-            rootDirPath.resolve(file)
-        }.toSet()
         val pathsToWatch = filesToWatch.map { it.parent }.toSet()
         val watchKeys = pathsToWatch.associateBy { dir ->
             dir.register(

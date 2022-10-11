@@ -16,6 +16,7 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     implementation("org.jetbrains.kotlinx:kotlinx-cli:0.3.5")
+    implementation("org.fusesource.jansi:jansi:2.4.0")
     implementation(files("./lib/ktcause-0.1-SNAPSHOT.jar"))
     implementation(files("./lib/ktcause-0.1-SNAPSHOT-all.jar"))
 }
