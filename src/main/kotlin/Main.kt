@@ -19,7 +19,7 @@ fun main(args: Array<String>) {
 
     argParser.parse(args)
 
-    val parts = partsArg.ifEmpty { listOf("partOne", "partTwo") }
+    val parts = partsArg.ifEmpty { listOf("part_one", "part_two") }
 
     val rootDirPath = rootDirectory?.let {
         Paths.get(it)
