@@ -1,0 +1,4 @@
+import core/stopgap/collections (MaybeStack)
+
+signal NeedInput(path: Text): Text
+signal NeedInputLines(path: Text): MaybeStack

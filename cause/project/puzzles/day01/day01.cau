@@ -1,6 +1,7 @@
 // Day 1: The Tyranny of the Rocket Equation
 
 import core/math (divide, floor, subtract)
+import aoc/input (NeedInputLines)
 
 function fuel_required(mass: Number): Number {
   let result = divide(mass, 3)
@@ -11,4 +12,13 @@ function fuel_required(mass: Number): Number {
 
 function test() {
   fuel_required(100756)
+}
+
+function partOne() {
+  let input = cause NeedInputLines("day01/puzzleinput.txt")
+  cause Debug(input)
+}
+
+function partTwo() {
+  cause Debug("todo")
 }
