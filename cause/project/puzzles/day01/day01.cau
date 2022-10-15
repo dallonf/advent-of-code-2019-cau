@@ -42,10 +42,20 @@ function recursive_fuel_required(mass: Number): Number {
   }
 }
 
-function test() {
-  recursive_fuel_required(1969)
-}
-
 function part_two() {
-  cause Debug("todo")
+  let input = cause NeedInputLines("day01/puzzleinput.txt")
+  let variable result = 0
+
+  effect for Increment as s {
+    set result = add(result, s.fuel)
+  }
+
+  for_each(input, fn(it: Anything) {
+    let mass = branch with it {
+      is Text as line => cause ParseNumber(line)
+      else => cause AssumptionBroken("")
+    }
+    cause Increment(recursive_fuel_required(mass))
+  })
+  result
 }
