@@ -1,0 +1,32 @@
+// Day 1: The Tyranny of the Rocket Equation
+
+import aoc/input (NeedInputLines, ParseNumber)
+
+function fuel_required(mass: Number) => mass
+  .divide(3)
+  .floor()
+  .subtract(2)
+
+function part_one() {
+  let input: List<Number> = (cause NeedInputLines("day01/puzzleinput.txt"))
+    .map(fn cause ParseNumber(it))
+  val fuel = input.map(fn(mass) fuel_required(mass))
+  fuel.fold(0, fn(previous, next) previous.plus(next))
+}
+
+function recursive_fuel_required(mass: Number): Number {
+  let fuel_mass = fuel_required(mass)
+  if fuel_mass.greater_than(0) {
+    let extra_mass = recursive_fuel_required(fuel_mass)
+    fuel_mass.plus(extra_mass)
+  } else {
+    0
+  }
+}
+
+function part_two() {
+  let input: List<Number> = (cause NeedInputLines("day01/puzzleinput.txt"))
+    .map(fn cause ParseNumber(it))
+  val fuel = input.map(fn(mass) recursive_fuel_required(mass))
+  fuel.fold(0, fn(previous, next) previous.plus(next))
+}
