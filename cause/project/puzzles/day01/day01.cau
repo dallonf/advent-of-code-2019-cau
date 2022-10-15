@@ -12,11 +12,11 @@ function fuel_required(mass: Number): Number {
   result
 }
 
-signal Increment(fuel: Number): Action
 function part_one() {
   let input = cause NeedInputLines("day01/puzzleinput.txt")
   let variable result = 0
 
+  signal Increment(fuel: Number): Action
   effect for Increment as s {
     set result = add(result, s.fuel)
   }
@@ -46,6 +46,7 @@ function part_two() {
   let input = cause NeedInputLines("day01/puzzleinput.txt")
   let variable result = 0
 
+  signal Increment(fuel: Number): Action
   effect for Increment as s {
     set result = add(result, s.fuel)
   }
