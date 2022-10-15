@@ -3,6 +3,7 @@
 import core/math (add, subtract, divide, floor, greater_than)
 import core/stopgap/collections (Stack, MaybeStack, Empty)
 import aoc/input (NeedInputLines, ParseNumber)
+import project/common/collections (for_each)
 
 function fuel_required(mass: Number): Number {
   let result = divide(mass, 3)
@@ -11,23 +12,22 @@ function fuel_required(mass: Number): Number {
   result
 }
 
+signal Increment(fuel: Number): Action
 function part_one() {
   let input = cause NeedInputLines("day01/puzzleinput.txt")
   let variable result = 0
-  let variable current: MaybeStack = input
-  loop {
-    branch with current {
-      is Empty => break
-      is Stack as current_stack {
-        let mass = branch with current_stack.top {
-          is Text as line => cause ParseNumber(line)
-          else => cause AssumptionBroken("")
-        }
-        set result = add(result, fuel_required(mass))
-        set current = current_stack.next
-      }
-    }
+
+  effect for Increment as s {
+    set result = add(result, s.fuel)
   }
+
+  for_each(input, fn(it: Anything) {
+    let mass = branch with it {
+      is Text as line => cause ParseNumber(line)
+      else => cause AssumptionBroken("")
+    }
+    cause Increment(fuel_required(mass))
+  })
   result
 }
 

@@ -1,0 +1,14 @@
+import core/stopgap/collections (Stack, MaybeStack, Empty)
+
+function for_each(input: MaybeStack, action: Function(it: Anything): Action) {
+  let variable current: MaybeStack = input
+  loop {
+    branch with current {
+      is Empty => break
+      is Stack as current_stack {
+        action(current_stack.top)
+        set current = current_stack.next
+      }
+    }
+  }
+}
