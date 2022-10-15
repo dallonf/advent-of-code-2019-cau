@@ -33,11 +33,13 @@ function part_one() {
 
 function recursive_fuel_required(mass: Number): Number {
   let fuel_mass = fuel_required(mass)
-  let extra_mass = branch {
-    if greater_than(fuel_mass, 0) => recursive_fuel_required(fuel_mass)
+  branch {
+    if greater_than(fuel_mass, 0) => {
+      let extra_mass = recursive_fuel_required(fuel_mass)
+      add(fuel_mass, extra_mass)
+    }
     else => 0
   }
-  add(fuel_mass, extra_mass)
 }
 
 function test() {
