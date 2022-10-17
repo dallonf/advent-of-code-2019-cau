@@ -1,0 +1,13 @@
+function as_text(this: Anything) {
+  branch with this {
+    is Text as this => return this
+    else => cause AssumptionBroken("expected text")
+  } 
+}
+
+function as_number(this: Anything) {
+  branch with this {
+    is Number as this => return this
+    else => cause AssumptionBroken("expected number")
+  } 
+}
