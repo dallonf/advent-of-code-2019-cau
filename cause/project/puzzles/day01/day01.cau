@@ -3,8 +3,8 @@
 import core/math (add, subtract, divide, floor, greater_than)
 import core/stopgap/collections (Stack, MaybeStack, Empty)
 import aoc/input (NeedInputLines, ParseNumber)
-import project/common/collections (for_each)
-import project/common/cast (as_text)
+import project/common/collections (map, fold)
+import project/common/cast (as_text, as_number)
 
 function fuel_required(mass: Number): Number {
   let result = divide(mass, 3)
@@ -15,18 +15,13 @@ function fuel_required(mass: Number): Number {
 
 function part_one() {
   let input = cause NeedInputLines("day01/puzzleinput.txt")
-  let variable result = 0
-
-  signal Increment(fuel: Number): Action
-  effect for Increment as s {
-    set result = add(result, s.fuel)
-  }
-
-  for_each(input, fn(it: Anything) {
+  let fuel = map(input, fn(it: Anything) {
     let mass = cause ParseNumber(as_text(it))
-    cause Increment(fuel_required(mass))
+    fuel_required(mass)
   })
-  result
+  fold(fuel, 0, fn(previous: Anything, next: Anything)
+    add(as_number(previous), as_number(next))
+  )
 }
 
 function recursive_fuel_required(mass: Number): Number {
@@ -42,16 +37,11 @@ function recursive_fuel_required(mass: Number): Number {
 
 function part_two() {
   let input = cause NeedInputLines("day01/puzzleinput.txt")
-  let variable result = 0
-
-  signal Increment(fuel: Number): Action
-  effect for Increment as s {
-    set result = add(result, s.fuel)
-  }
-
-  for_each(input, fn(it: Anything) {
+  let fuel = map(input, fn(it: Anything) {
     let mass = cause ParseNumber(as_text(it))
-    cause Increment(recursive_fuel_required(mass))
+    recursive_fuel_required(mass)
   })
-  result
+  fold(fuel, 0, fn(previous: Anything, next: Anything)
+    add(as_number(previous), as_number(next))
+  )
 }

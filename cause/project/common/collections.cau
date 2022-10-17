@@ -12,3 +12,26 @@ function for_each(this: MaybeStack, action: Function(it: Anything): Action) {
     }
   }
 }
+
+function map(this: MaybeStack, callback: Function(it: Anything): Anything): MaybeStack {
+  branch with this {
+    is Empty as this => this
+    is Stack as this {
+      let new_value = callback(this.top)
+      Stack(
+        new_value,
+        map(this.next, callback)
+      )
+    }
+  }
+}
+
+function fold(this: MaybeStack, initial: Anything, callback: Function(previous: Anything, next: Anything): Anything): Anything {
+  branch with this {
+    is Empty as this => initial
+    is Stack as this {
+      let new_value = callback(initial, this.top)
+      fold(this.next, new_value, callback)
+    }
+  }
+}
