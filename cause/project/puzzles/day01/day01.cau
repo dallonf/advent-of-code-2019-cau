@@ -4,6 +4,7 @@ import core/math (add, subtract, divide, floor, greater_than)
 import core/stopgap/collections (Stack, MaybeStack, Empty)
 import aoc/input (NeedInputLines, ParseNumber)
 import project/common/collections (for_each)
+import project/common/cast (as_text)
 
 function fuel_required(mass: Number): Number {
   let result = divide(mass, 3)
@@ -22,10 +23,7 @@ function part_one() {
   }
 
   for_each(input, fn(it: Anything) {
-    let mass = branch with it {
-      is Text as line => cause ParseNumber(line)
-      else => cause AssumptionBroken("")
-    }
+    let mass = cause ParseNumber(as_text(it))
     cause Increment(fuel_required(mass))
   })
   result
@@ -52,10 +50,7 @@ function part_two() {
   }
 
   for_each(input, fn(it: Anything) {
-    let mass = branch with it {
-      is Text as line => cause ParseNumber(line)
-      else => cause AssumptionBroken("")
-    }
+    let mass = cause ParseNumber(as_text(it))
     cause Increment(recursive_fuel_required(mass))
   })
   result
