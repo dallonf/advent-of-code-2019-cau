@@ -1,3 +1,4 @@
+import core/math (add)
 import core/stopgap/collections (Stack, MaybeStack, Empty)
 
 function for_each(this: MaybeStack, action: Function(it: Anything): Action) {
@@ -13,6 +14,20 @@ function for_each(this: MaybeStack, action: Function(it: Anything): Action) {
   }
 }
 
+function for_each_with_index(this: MaybeStack, callback: Function(it: Anything, index: Number): Action) {
+  let variable index = 0
+  signal Increment: Action
+  signal RequestIndex: Number
+  effect for Increment {
+    set index = add(index, 1)
+  }
+  effect for RequestIndex as request_index => index
+  for_each(this, fn(it: Anything) {
+    callback(it, cause RequestIndex)
+    cause Increment
+  })
+}
+
 function map(this: MaybeStack, callback: Function(it: Anything): Anything): MaybeStack {
   branch with this {
     is Empty as this => this
@@ -26,6 +41,21 @@ function map(this: MaybeStack, callback: Function(it: Anything): Anything): Mayb
   }
 }
 
+function map_with_index(this: MaybeStack, callback: Function(it: Anything, index: Number): Anything): MaybeStack {
+  let variable index = 0
+  signal Increment: Action
+  signal RequestIndex: Number
+  effect for Increment {
+    set index = add(index, 1)
+  }
+  effect for RequestIndex as request_index => index
+  map(this, fn(it: Anything) {
+    let result = callback(it, cause RequestIndex)
+    cause Increment
+    result
+  })
+}
+
 function fold(this: MaybeStack, initial: Anything, callback: Function(previous: Anything, next: Anything): Anything): Anything {
   branch with this {
     is Empty as this => initial
@@ -34,4 +64,18 @@ function fold(this: MaybeStack, initial: Anything, callback: Function(previous: 
       fold(this.next, new_value, callback)
     }
   }
+}
+
+function at_index(this: MaybeStack, index: Number): Anything {
+  let requested_index = index
+  signal Return(value: Anything): NeverContinues
+  effect for Return as ret {
+    return ret.value
+  }
+  for_each_with_index(this, fn(it: Anything, index: Number) {
+    branch {
+      if equals(requested_index, index) => cause Return(it)
+      else => {}
+    }
+  })
 }
