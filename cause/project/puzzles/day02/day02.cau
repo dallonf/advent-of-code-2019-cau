@@ -13,8 +13,9 @@ function parse_program(text: Text): MaybeStack {
 
 function test() {
   let program = parse_program(cause NeedInput("day02/exampleinput.txt"))
+  // let program = Stack(1337, Stack(99, Empty))
   let after_memory = run_vm(program)
-  at_index(after_memory, 3)
+  at_index(after_memory, 0)
 }
 
 signal ReadMemory(index: Number): Number
@@ -44,12 +45,18 @@ function run_vm(program: MaybeStack): MaybeStack {
 
   loop {
     set instruction_pointer = execute(instruction_pointer)
+    return memory
   }
 }
 
 function execute(instruction_pointer: Number): Number {
   let instruction = cause ReadMemory(instruction_pointer)
   branch {
+    if equals(instruction, 1337) {
+      cause WriteMemory(0, 42)
+      add(instruction_pointer, 1)
+    }
+
     if equals(instruction, 1) {
       let position_1 = cause ReadMemory(add(instruction_pointer, 1))
       let position_2 = cause ReadMemory(add(instruction_pointer, 2))
@@ -60,7 +67,7 @@ function execute(instruction_pointer: Number): Number {
       let result = add(value_1, value_2)
 
       cause WriteMemory(position_3, result)
-      return add(instruction_pointer, 4)
+      add(instruction_pointer, 4)
     }
     if equals(instruction, 2) {
       let position_1 = cause ReadMemory(add(instruction_pointer, 1))
@@ -72,7 +79,7 @@ function execute(instruction_pointer: Number): Number {
       let result = multiply(value_1, value_2)
       
       cause WriteMemory(position_3, result)
-      return add(instruction_pointer, 4)
+      add(instruction_pointer, 4)
     }
     if equals(instruction, 99) => cause Terminate
     else => cause AssumptionBroken("what is this instruction lol")
