@@ -79,3 +79,17 @@ function at_index(this: MaybeStack, index: Number): Anything {
     }
   })
 }
+
+function with_index_changed(this: MaybeStack, index: Number, callback: Function(previous: Anything): Anything): MaybeStack {
+  let target_index = index
+  map_with_index(this, fn(it: Anything, index: Number) {
+    branch {
+      if equals(index, target_index) => callback(it)
+      else => it
+    }
+  })
+}
+
+function with_index_set(this: MaybeStack, index: Number, new_value: Anything): MaybeStack {
+  with_index_changed(this, index, fn(previous: Anything) new_value)
+}
