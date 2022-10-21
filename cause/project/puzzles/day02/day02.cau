@@ -1,21 +1,28 @@
 // Day 2: 1202 Program Alarm
 
 import core/math (add, multiply)
+import core/text (number_to_text)
 import core/stopgap/collections (Stack, MaybeStack, Empty)
 import aoc/input (NeedInput, Split, ParseNumber)
-import project/common/collections (at_index, map, map_with_index, for_each_with_index)
+import project/common/collections (at_index, map, map_with_index, for_each_with_index, with_index_set)
 import project/common/cast (as_number, as_text)
+import project/common/debug (join_text)
 
 function parse_program(text: Text): MaybeStack {
   let items = cause Split(text, ",")
   map(items, fn(it: Anything) cause ParseNumber(as_text(it)))
 }
 
+function debug_memory(memory: MaybeStack) {
+  let transformed_memory = map(memory, fn(it: Anything) number_to_text(as_number(it)))
+  cause Debug(join_text(transformed_memory, ", "))
+}
+
 function test() {
   let program = parse_program(cause NeedInput("day02/exampleinput.txt"))
-  // let program = Stack(1337, Stack(99, Empty))
+  debug_memory(program)
   let after_memory = run_vm(program)
-  at_index(after_memory, 0)
+  debug_memory(after_memory)
 }
 
 signal ReadMemory(index: Number): Number
@@ -35,28 +42,17 @@ function run_vm(program: MaybeStack): MaybeStack {
   }
 
   effect for WriteMemory as write_memory {
-    set memory = map_with_index(memory, fn(it: Anything, index: Number) {
-      branch {
-        if equals(index, write_memory.index) => write_memory.value
-        else => it
-      }
-    })
+    set memory = with_index_set(memory, write_memory.index, write_memory.value)
   }
 
   loop {
     set instruction_pointer = execute(instruction_pointer)
-    return memory
   }
 }
 
 function execute(instruction_pointer: Number): Number {
   let instruction = cause ReadMemory(instruction_pointer)
   branch {
-    if equals(instruction, 1337) {
-      cause WriteMemory(0, 42)
-      add(instruction_pointer, 1)
-    }
-
     if equals(instruction, 1) {
       let position_1 = cause ReadMemory(add(instruction_pointer, 1))
       let position_2 = cause ReadMemory(add(instruction_pointer, 2))
@@ -84,4 +80,12 @@ function execute(instruction_pointer: Number): Number {
     if equals(instruction, 99) => cause Terminate
     else => cause AssumptionBroken("what is this instruction lol")
   }
+}
+
+function part_one() {
+    let program = parse_program(cause NeedInput("day02/puzzleinput.txt"))
+    let program = with_index_set(program, 1, 12)
+    let program = with_index_set(program, 2, 2)
+    let after_memory = run_vm(program)
+    at_index(after_memory, 0)
 }

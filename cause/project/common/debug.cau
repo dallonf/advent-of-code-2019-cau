@@ -1,0 +1,20 @@
+import core/text (append)
+import core/stopgap/collections (MaybeStack, Stack, Empty)
+import project/common/cast (as_text)
+
+function join_text_inner(result: Text, remaining: MaybeStack, separator: Text): Text {
+  branch with remaining {
+    is Empty => result
+    is Stack as remaining => {
+      let current = append(result, as_text(remaining.top))
+      branch with remaining.next {
+        is Empty => current
+        is Stack as next => join_text_inner(append(current, separator), next, separator)
+      }
+    }
+  }
+}
+
+function join_text(this: MaybeStack, separator: Text): Text {
+  join_text_inner("", this, separator)
+}
