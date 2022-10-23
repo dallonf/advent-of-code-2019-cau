@@ -1,0 +1,14 @@
+import core/math (add, greater_than)
+
+function count_inclusive(from: Number, to: Number, callback: Function(i: Number): Action) {
+  let variable current = from
+  loop {
+    branch {
+      if greater_than(current, to) => return
+      else => {
+        callback(current)
+        set current = add(current, 1)
+      }
+    }
+  }
+}

@@ -63,6 +63,14 @@ class Runner(val vm: LangVm, val rootDir: Path) {
                     result.map { RuntimeValue.Text(it) }.toCauseStack(vm)
                 }
 
+                vm.codeBundle.getTypeId("aoc/interface.cau", "ReportProgress") -> {
+                    val message = signal.values[0] as RuntimeValue.Text
+
+                    println(message.value)
+                    vm.reportTick()
+                    RuntimeValue.Action
+                }
+
                 else -> {
                     throw Error("Unrecognized signal: ${signal.typeDescriptor.id}")
                 }
