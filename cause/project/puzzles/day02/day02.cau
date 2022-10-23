@@ -2,19 +2,34 @@
 
 import core/math (add, multiply)
 import core/text (number_to_text)
-import core/stopgap/collections (Stack, MaybeStack, Empty)
+import core/stopgap/collections (Stack, MaybeStack, Empty, Dictionary, get_item, with_item_at_key, list_entries, KeyValuePair)
 import aoc/input (NeedInput, Split, ParseNumber)
 import project/common/collections (at_index, map, map_with_index, for_each_with_index, with_index_set)
 import project/common/cast (as_number, as_text)
 import project/common/debug (join_text)
 
-function parse_program(text: Text): MaybeStack {
+function parse_program(text: Text): Dictionary {
   let items = cause Split(text, ",")
-  map(items, fn(it: Anything) cause ParseNumber(as_text(it)))
+  let variable program = Dictionary()
+  signal AddItem(index: Number, value: Number): Action
+  effect for AddItem as add_item {
+    set program = with_item_at_key(program, number_to_text(add_item.index), add_item.value)
+  }
+  for_each_with_index(items, fn(it: Anything, index: Number) {
+    let number = cause ParseNumber(as_text(it))
+    cause AddItem(index, number)
+  })
+  program
 }
 
-function debug_memory(memory: MaybeStack) {
-  let transformed_memory = map(memory, fn(it: Anything) number_to_text(as_number(it)))
+function debug_memory(memory: Dictionary) {
+  let transformed_memory = map(list_entries(memory), fn(it: Anything) {
+    let kvp = branch with it {
+      is KeyValuePair as kvp2 => kvp2
+      else => cause AssumptionBroken("")
+    }
+    number_to_text(as_number(kvp.value))
+  })
   cause Debug(join_text(transformed_memory, ", "))
 }
 
@@ -29,7 +44,7 @@ signal ReadMemory(index: Number): Number
 signal WriteMemory(index: Number, value: Number): Action
 signal Terminate: NeverContinues
 
-function run_vm(program: MaybeStack): MaybeStack {
+function run_vm(program: Dictionary): Dictionary {
   let variable memory = program
   let variable instruction_pointer = 0
 
@@ -38,11 +53,11 @@ function run_vm(program: MaybeStack): MaybeStack {
   }
   
   effect for ReadMemory as it {
-    as_number(at_index(memory, it.index))
+    as_number(get_item(memory, number_to_text(it.index)))
   }
 
   effect for WriteMemory as write_memory {
-    set memory = with_index_set(memory, write_memory.index, write_memory.value)
+    set memory = with_item_at_key(memory, number_to_text(write_memory.index), write_memory.value)
   }
 
   loop {
@@ -84,8 +99,8 @@ function execute(instruction_pointer: Number): Number {
 
 function part_one() {
     let program = parse_program(cause NeedInput("day02/puzzleinput.txt"))
-    let program = with_index_set(program, 1, 12)
-    let program = with_index_set(program, 2, 2)
+    let program = with_item_at_key(program, "1", 12)
+    let program = with_item_at_key(program, "2", 2)
     let after_memory = run_vm(program)
-    at_index(after_memory, 0)
+    get_item(after_memory, "0")
 }
