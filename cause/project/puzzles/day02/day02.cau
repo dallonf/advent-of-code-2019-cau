@@ -1,12 +1,14 @@
 // Day 2: 1202 Program Alarm
 
 import core/math (add, multiply)
-import core/text (number_to_text)
+import core/text (number_to_text, append)
 import core/stopgap/collections (Stack, MaybeStack, Empty, Dictionary, get_item, with_item_at_key, list_entries, KeyValuePair)
 import aoc/input (NeedInput, Split, ParseNumber)
+import aoc/interface (ReportProgress)
 import project/common/collections (at_index, map, map_with_index, for_each_with_index, with_index_set)
 import project/common/cast (as_number, as_text)
 import project/common/debug (join_text)
+import project/common/range (count_inclusive)
 
 function parse_program(text: Text): Dictionary {
   let items = cause Split(text, ",")
@@ -103,4 +105,34 @@ function part_one() {
     let program = with_item_at_key(program, "2", 2)
     let after_memory = run_vm(program)
     get_item(after_memory, "0")
+}
+
+function part_two() {
+  let program = parse_program(cause NeedInput("day02/puzzleinput.txt"))
+
+  signal FoundAnswer(noun: Number, verb: Number): NeverContinues
+  effect for FoundAnswer as found_answer {
+    return add(multiply(found_answer.noun, 100), found_answer.verb)
+  }
+
+  let MAX = 99
+
+  count_inclusive(0, MAX, fn(i: Number) {
+    let noun = i
+    count_inclusive(0, MAX, fn(i: Number) {
+      let verb = i
+      let modified_program = with_item_at_key(program, "1", noun)
+      let modified_program = with_item_at_key(modified_program, "2", verb)
+      let after_memory = run_vm(modified_program)
+      let result = get_item(after_memory, "0")
+      // cause Debug(result)
+      branch {
+        if equals(result, 19690720) => cause FoundAnswer(noun, verb)
+        else => {}
+      }
+    })
+    cause ReportProgress(append(append("Handled noun ", number_to_text(noun)), "..."))
+  })
+
+  cause AssumptionBroken("Couldn't find a result")
 }

@@ -15,6 +15,7 @@ fun main(args: Array<String>) {
     val day by argParser.argument(ArgType.Int, "day")
     val partsArg by argParser.option(ArgType.String, "part", "p").multiple()
     val rootDirectory by argParser.option(ArgType.String, "rootDirectory", "r")
+    val debugVm by argParser.option(ArgType.Boolean, "debugVm", "v")
 
     argParser.parse(args)
 
@@ -34,7 +35,7 @@ fun main(args: Array<String>) {
             val codeLoader = CodeLoader(rootDirPath)
             codeLoader.addFileWithDependencies(filepath)
 
-            val runner = Runner(LangVm(codeLoader.builder.build(), LangVm.Options(debugInstructionLevelExecution = false)), rootDirPath)
+            val runner = Runner(LangVm(codeLoader.builder.build(), LangVm.Options(debugInstructionLevelExecution = debugVm ?: false)), rootDirPath)
             filesToWatch = runner.vm.codeBundle.files.keys.mapNotNull { file ->
                 if (file.startsWith("core/")) {
                     return@mapNotNull null
@@ -50,7 +51,7 @@ fun main(args: Array<String>) {
                     println()
                     println(error.debug())
                     val file = runner.vm.codeBundle.files[error.position.path]!!
-                    val source = file.debugCtx?.let { it.getSourceContext(error.position.breadcrumbs) }
+                    val source = file.debugCtx?.getSourceContext(error.position.breadcrumbs)
                     if (source != null) {
                         println("```")
                         print(source)
