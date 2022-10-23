@@ -70,14 +70,14 @@ class Runner(val vm: LangVm, val rootDir: Path) {
 
             executionState = vm.resumeExecution(resultValue)
         }
+        val returnVal = (executionState as? RunResult.Returned)?.returnValue
 
-        val returnVal = executionState.expectReturnValue()
         val endTime = System.nanoTime()
 
         val elapsedMs = (endTime - startTime) / 1_000_000
 
         println("Done in ${elapsedMs}ms")
-        if (returnVal !is RuntimeValue.Action) {
+        if (returnVal != null && returnVal !is RuntimeValue.Action) {
             println("Result: ${returnVal.debug()}")
         }
     }

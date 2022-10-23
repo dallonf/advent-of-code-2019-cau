@@ -7,7 +7,6 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardWatchEventKinds
 import kotlin.io.path.relativeTo
-import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
     AnsiConsole.systemInstall()
