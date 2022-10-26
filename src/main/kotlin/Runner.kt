@@ -29,7 +29,10 @@ class Runner(val vm: LangVm, val rootDir: Path) {
 
                 vm.codeBundle.getBuiltinTypeId("AssumptionBroken") -> {
                     val value = signal.values[0] as RuntimeValue.Text
-                    println(Ansi.ansi().fg(Ansi.Color.RED).render("Assumption broken: " + value.value).reset())
+                    println(
+                        Ansi.ansi().fg(Ansi.Color.RED).render(vm.getExecutionTrace())
+                            .render("Assumption broken: " + value.value).reset()
+                    )
                     break
                 }
 
@@ -72,7 +75,7 @@ class Runner(val vm: LangVm, val rootDir: Path) {
                 }
 
                 else -> {
-                    throw Error("Unrecognized signal: ${signal.typeDescriptor.id}")
+                    throw Error(vm.getExecutionTrace() + "Unrecognized signal: ${signal.typeDescriptor.id}")
                 }
             }
 
