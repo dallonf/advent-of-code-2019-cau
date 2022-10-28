@@ -1,4 +1,25 @@
+import aoc/draw (
+  Draw, FrameDone, Rectangle, DrawableText, Red, Black, Left, Bottom, width
+)
+
 function part_one() {
+  cause Draw(Rectangle(
+    Red,
+    100,
+    100,
+    200,
+    200,
+  ))
+  cause Draw(DrawableText(
+    "hello, world!",
+    Black,
+    100,
+    90,
+    16,
+    Left,
+    Bottom,
+  ))
+  cause FrameDone
   1
 }
 

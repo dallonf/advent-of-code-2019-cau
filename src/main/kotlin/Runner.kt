@@ -6,12 +6,14 @@ import com.dallonf.ktcause.RuntimeValue
 import org.fusesource.jansi.Ansi
 import java.nio.file.Path
 
-class Runner(val vm: LangVm, val rootDir: Path) {
+class Runner(val vm: LangVm, val rootDir: Path, val window: VizWindow) {
     fun run(file: String, part: String) {
         val startTime = System.nanoTime()
         var executionState = vm.executeFunction(file, part, listOf())
 
         fun getInputFile(path: String) = rootDir.resolve("project/puzzles").resolve(path).toFile()
+
+        var drawQueue = mutableListOf<RuntimeValue.RuntimeObject>()
 
         while (executionState is RunResult.Caused) {
             val signal = executionState.signal
@@ -71,6 +73,18 @@ class Runner(val vm: LangVm, val rootDir: Path) {
 
                     println(message.value)
                     vm.reportTick()
+                    RuntimeValue.Action
+                }
+
+                vm.codeBundle.getTypeId("aoc/draw.cau", "Draw") -> {
+                    val drawable = signal.values[0].validate() as RuntimeValue.RuntimeObject
+                    drawQueue.add(drawable)
+                    RuntimeValue.Action
+                }
+
+                vm.codeBundle.getTypeId("aoc/draw.cau", "FrameDone") -> {
+                    window.drawables = drawQueue.toList()
+                    drawQueue.clear()
                     RuntimeValue.Action
                 }
 
