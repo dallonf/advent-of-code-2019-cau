@@ -11,6 +11,9 @@ import kotlin.io.path.relativeTo
 fun main(args: Array<String>) {
     AnsiConsole.systemInstall()
 
+    val window = VizWindow()
+    window.open()
+
     val argParser = ArgParser("aoc-cau")
     val day by argParser.argument(ArgType.Int, "day")
     val partsArg by argParser.option(ArgType.String, "part", "p").multiple()
