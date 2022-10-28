@@ -1,0 +1,38 @@
+object White
+object Black
+object Red
+object RedLight
+object RedDark
+option Color(White, Black, Red, RedLight, RedDark)
+
+object Left
+object Center
+object Right
+option HorizontalAlignment(Left, Center, Right)
+object Top
+object Bottom
+option VerticalAlignment(Top, Center, Bottom)
+
+object Rectangle(
+  color: Color,
+  x: Number,
+  y: Number,
+  width: Number,
+  height: Number,
+)
+object DrawableText(
+  text: Text,
+  color: Color,
+  x: Number,
+  y: Number,
+  font_size: Number,
+  h_alignment: HorizontalAlignment,
+  v_alignment: VerticalAlignment,
+)
+option Drawable(Rectangle, DrawableText)
+
+signal Draw(drawable: Drawable): Action
+signal FrameDone: Action
+
+function width() => 1366
+function height() => 768

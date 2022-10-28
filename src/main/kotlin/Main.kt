@@ -38,7 +38,12 @@ fun main(args: Array<String>) {
             val codeLoader = CodeLoader(rootDirPath)
             codeLoader.addFileWithDependencies(filepath)
 
-            val runner = Runner(LangVm(codeLoader.builder.build(), LangVm.Options(debugInstructionLevelExecution = debugVm ?: false)), rootDirPath)
+            val runner = Runner(
+                LangVm(
+                    codeLoader.builder.build(),
+                    LangVm.Options(debugInstructionLevelExecution = debugVm ?: false)
+                ), rootDirPath, window
+            )
             filesToWatch = runner.vm.codeBundle.files.keys.mapNotNull { file ->
                 if (file.startsWith("core/")) {
                     return@mapNotNull null

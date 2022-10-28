@@ -4,6 +4,12 @@ import java.nio.file.Path
 class CodeLoader(private val rootDirectory: Path) {
     val builder = CodeBundleBuilder()
 
+    init {
+        addFile("aoc/input.cau")
+        addFile("aoc/interface.cau")
+        addFile("aoc/draw.cau")
+    }
+
     fun addFile(path: String) {
         val file = rootDirectory.resolve(path).toFile()
         val text = file.readText()
