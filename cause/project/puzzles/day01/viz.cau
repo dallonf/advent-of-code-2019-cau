@@ -1,6 +1,12 @@
+import core/math (add)
+import core/text (append, number_to_text)
 import core/stopgap/collections (MaybeStack, Stack, Empty)
-import aoc/draw (Draw, FrameDone, Rectangle, DrawableText, Black, Left, Top, RedLight)
-import project/common/collections (push, peek)
+import aoc/draw (
+  Draw, FrameDone, Rectangle, DrawableText,
+  Black, Left, Right, Center, Top,
+  Bottom, Red, RedLight
+)
+import project/common/collections (push, peek, for_each)
 
 signal NewPart(mass: Number): Action
 signal AdditionalFuel(mass: Number): Action
@@ -25,16 +31,32 @@ function visualize_part_two(compute: Function(): Anything): Anything {
 
   function render() {
     let parts_stack = cause ReadParts
-    cause Draw(Rectangle(
-      RedLight,
-      0, 0,
-      100, 100,
-    ))
-    cause Draw(DrawableText(
-      "hello world", Black, 16,
-      0, 0,
-      Top, Left,
-    ))
+    let PART_HEIGHT = 48
+    let TEXT_HEIGHT = 16
+    let variable y_cursor = 0
+    signal ReadYCursor: Number
+    effect for ReadYCursor => y_cursor
+    signal WriteYCursor(value: Number): Action
+    effect for WriteYCursor as write => set y_cursor = write.value
+
+    parts_stack>>for_each(fn(item: Anything) {
+      let item = item>>as_part_and_fuel()
+      let y_cursor = cause ReadYCursor()
+
+      cause Draw(DrawableText(
+        item.initial_mass>>number_to_text(),
+        Black,
+        16,
+        8, y_cursor,
+        Top,
+        Left,
+      ))
+
+      let offset = PART_HEIGHT>>add(TEXT_HEIGHT)
+      let new_offset = y_cursor>>add(offset)
+      cause WriteYCursor(new_offset)
+    })
+
     cause FrameDone
   }
 
