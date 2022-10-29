@@ -38,9 +38,11 @@ function recursive_fuel_required(mass: Number): Number {
 
 function part_two() {
   visualize_part_two(fn() {
+    // let input = cause NeedInputLines("day01/exampleinput.txt")
     let input = cause NeedInputLines("day01/puzzleinput.txt")
     let fuel = map(input, fn(it: Anything) {
       let mass = cause ParseNumber(as_text(it))
+      cause NewPart(mass)
       recursive_fuel_required(mass)
     })
     fold(fuel, 0, fn(previous: Anything, next: Anything)

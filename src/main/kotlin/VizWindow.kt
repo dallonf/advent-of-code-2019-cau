@@ -105,8 +105,8 @@ class VizWindow : JFrame("Advent of Code 2019") {
             }.toFloat()
 
             val yAligned: Float = when (vAlignment) {
-                "Top" -> x + textHeight
-                "Center" -> x + textHeight / 2
+                "Top" -> y + textHeight
+                "Center" -> y + textHeight / 2
                 "Bottom" -> y
                 else -> throw AssertionError("bad alignment: $vAlignment")
             }.toFloat()
