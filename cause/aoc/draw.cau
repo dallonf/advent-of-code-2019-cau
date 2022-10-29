@@ -23,11 +23,11 @@ object Rectangle(
 object DrawableText(
   text: Text,
   color: Color,
+  font_size: Number,
   x: Number,
   y: Number,
-  font_size: Number,
-  h_alignment: HorizontalAlignment,
   v_alignment: VerticalAlignment,
+  h_alignment: HorizontalAlignment,
 )
 option Drawable(Rectangle, DrawableText)
 
