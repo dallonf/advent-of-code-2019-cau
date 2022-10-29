@@ -5,6 +5,7 @@ import core/stopgap/collections (Stack, MaybeStack, Empty)
 import aoc/input (NeedInputLines, ParseNumber)
 import project/common/collections (map, fold)
 import project/common/cast (as_text, as_number)
+import ./viz (NewPart, AdditionalFuel, visualize_part_two)
 
 function fuel_required(mass: Number): Number {
   let result = divide(mass, 3)
@@ -36,12 +37,14 @@ function recursive_fuel_required(mass: Number): Number {
 }
 
 function part_two() {
-  let input = cause NeedInputLines("day01/puzzleinput.txt")
-  let fuel = map(input, fn(it: Anything) {
-    let mass = cause ParseNumber(as_text(it))
-    recursive_fuel_required(mass)
+  visualize_part_two(fn() {
+    let input = cause NeedInputLines("day01/puzzleinput.txt")
+    let fuel = map(input, fn(it: Anything) {
+      let mass = cause ParseNumber(as_text(it))
+      recursive_fuel_required(mass)
+    })
+    fold(fuel, 0, fn(previous: Anything, next: Anything)
+      add(as_number(previous), as_number(next))
+    )
   })
-  fold(fuel, 0, fn(previous: Anything, next: Anything)
-    add(as_number(previous), as_number(next))
-  )
 }

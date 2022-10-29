@@ -93,3 +93,17 @@ function with_index_changed(this: MaybeStack, index: Number, callback: Function(
 function with_index_set(this: MaybeStack, index: Number, new_value: Anything): MaybeStack {
   with_index_changed(this, index, fn(previous: Anything) new_value)
 }
+
+function push(this: MaybeStack, new_value: Anything): Stack {
+  Stack(
+    new_value,
+    this
+  )
+}
+
+function peek(this: MaybeStack): Anything {
+  branch with this {
+    is Stack as this => this.top
+    is Empty => Empty
+  }
+}

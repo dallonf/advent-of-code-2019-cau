@@ -13,11 +13,11 @@ function part_one() {
   cause Draw(DrawableText(
     "hello, world!",
     Black,
+    16,
     100,
     90,
-    16,
-    Left,
     Bottom,
+    Left,
   ))
   cause FrameDone
   1

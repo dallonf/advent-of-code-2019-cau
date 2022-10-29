@@ -1,0 +1,65 @@
+import core/stopgap/collections (MaybeStack, Stack, Empty)
+import aoc/draw (Draw, FrameDone, Rectangle, DrawableText, Black, Left, Top, RedLight)
+import project/common/collections (push, peek)
+
+signal NewPart(mass: Number): Action
+signal AdditionalFuel(mass: Number): Action
+
+function visualize_part_two(compute: Function(): Anything): Anything {
+  object PartAndFuel(
+    initial_mass: Number,
+    fuel: MaybeStack,
+  )
+  function as_part_and_fuel(it: Anything) {
+    branch with it {
+      is PartAndFuel as it => it
+      else => cause AssumptionBroken("should have been a PartAndFuel")
+    }
+  }
+
+  let variable parts_stack: MaybeStack = Empty()
+  signal ReadParts: MaybeStack
+  effect for ReadParts {
+    parts_stack
+  }
+
+  function render() {
+    let parts_stack = cause ReadParts
+    cause Draw(Rectangle(
+      RedLight,
+      0, 0,
+      100, 100,
+    ))
+    cause Draw(DrawableText(
+      "hello world", Black, 16,
+      0, 0,
+      Top, Left,
+    ))
+    cause FrameDone
+  }
+
+  effect for NewPart as new_part {
+    set parts_stack = parts_stack>>push(PartAndFuel(
+      new_part.mass,
+      Empty
+    ))
+    render()
+  }
+
+  effect for AdditionalFuel as additional_fuel {
+    branch with parts_stack {
+      is Stack as parts_stack => {
+        let part = parts_stack.top>>as_part_and_fuel()
+        let updated_part = PartAndFuel(
+          part.initial_mass,
+          part.fuel>>push(additional_fuel.mass)
+        )
+      }
+      is Empty => cause AssumptionBroken("tried to add fuel but the part doesn't exist")
+    }
+    render()
+  }
+
+  render()
+  compute()
+}
