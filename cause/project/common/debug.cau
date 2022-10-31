@@ -4,33 +4,19 @@ import core/stopgap/collections (List, count, nth)
 import project/common/cast (as_text)
 import project/common/collections (fold)
 
-function join_text_inner(result: Text, remaining: MaybeStack, separator: Text): Text {
-  branch with remaining {
-    is Empty => result
-    is Stack as remaining => {
-      let current = append(result, as_text(remaining.top))
-      branch with remaining.next {
-        is Empty => current
-        is Stack as next => join_text_inner(append(current, separator), next, separator)
-      }
-    }
-  }
-}
-
 function join_text(this: List, separator: Text): Text {
   let this_count = this>>count()
   branch {
-    equals(0, this_count) => ""
-    equals(1, this_count) => this>>nth(1)
+    if equals(0, this_count) => ""
+    if equals(1, this_count) => this>>nth(1)>>as_text()
     else => {
-      let variable current = this>>nth(1)
+      let variable current = this>>nth(1)>>as_text()
       let variable index = 2
       loop {
-        set current = current>>append(separator)>>append(list>>nth(index))
-
+        set current = current>>append(separator)>>append(this>>nth(index)>>as_text())
         set index = index>>add(1)
         branch {
-          index>>greater_than(this_count) => break
+          if index>>greater_than(this_count) => break
           else => {}
         }
       }

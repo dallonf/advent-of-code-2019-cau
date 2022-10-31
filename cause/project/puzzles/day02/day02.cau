@@ -1,25 +1,25 @@
 // Day 2: 1202 Program Alarm
 
 import core/math (add, multiply)
-import core/text (number_to_text, append)
-import core/stopgap/collections (Stack, MaybeStack, Empty, Dictionary, get_item, with_item_at_key, list_entries, KeyValuePair)
+import core/text (number_to_text, append as append_text)
+import core/stopgap/collections (Empty, List, append, with_item_at_index, at_index)
 import aoc/input (NeedInput, Split, ParseNumber)
 import aoc/interface (ReportProgress)
-import project/common/collections (at_index, map, map_with_index, for_each_with_index, with_index_set)
+import project/common/collections (map, map_with_index, for_each_with_index, for_each)
 import project/common/cast (as_number, as_text)
 import project/common/debug (join_text)
 import project/common/range (count_inclusive)
 
-function parse_program(text: Text): Dictionary {
+function parse_program(text: Text): List {
   let items = cause Split(text, ",")
-  let variable program = Dictionary()
-  signal AddItem(index: Number, value: Number): Action
+  let variable program = List()
+  signal AddItem(value: Number): Action
   effect for AddItem as add_item {
-    set program = with_item_at_key(program, number_to_text(add_item.index), add_item.value)
+    set program = program>>append(add_item.value)
   }
-  for_each_with_index(items, fn(it: Anything, index: Number) {
+  for_each(items, fn(it: Anything) {
     let number = cause ParseNumber(as_text(it))
-    cause AddItem(index, number)
+    cause AddItem(number)
   })
   program
 }
@@ -55,11 +55,11 @@ function run_vm(program: Dictionary): Dictionary {
   }
   
   effect for ReadMemory as it {
-    as_number(get_item(memory, number_to_text(it.index)))
+    as_number(at_index(memory, it.index))
   }
 
   effect for WriteMemory as write_memory {
-    set memory = with_item_at_key(memory, number_to_text(write_memory.index), write_memory.value)
+    set memory = with_item_at_index(memory, write_memory.index, write_memory.value)
   }
 
   loop {
@@ -101,8 +101,8 @@ function execute(instruction_pointer: Number): Number {
 
 function part_one() {
     let program = parse_program(cause NeedInput("day02/puzzleinput.txt"))
-    let program = with_item_at_key(program, "1", 12)
-    let program = with_item_at_key(program, "2", 2)
+    let program = with_item_at_index(program, 1, 12)
+    let program = with_item_at_index(program, 2, 2)
     let after_memory = run_vm(program)
     get_item(after_memory, "0")
 }
@@ -121,11 +121,10 @@ function part_two() {
     let noun = i
     count_inclusive(0, MAX, fn(i: Number) {
       let verb = i
-      let modified_program = with_item_at_key(program, "1", noun)
-      let modified_program = with_item_at_key(modified_program, "2", verb)
+      let modified_program = at_index(program, 1, noun)
+      let modified_program = at_index(modified_program, 2, verb)
       let after_memory = run_vm(modified_program)
       let result = get_item(after_memory, "0")
-      // cause Debug(result)
       branch {
         if equals(result, 19690720) => cause FoundAnswer(noun, verb)
         else => {}
