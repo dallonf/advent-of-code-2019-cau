@@ -1,6 +1,8 @@
 import core/text (append)
-import core/stopgap/collections (MaybeStack, Stack, Empty)
+import core/number (add, greater_than)
+import core/stopgap/collections (List, count, nth)
 import project/common/cast (as_text)
+import project/common/collections (fold)
 
 function join_text_inner(result: Text, remaining: MaybeStack, separator: Text): Text {
   branch with remaining {
@@ -15,6 +17,24 @@ function join_text_inner(result: Text, remaining: MaybeStack, separator: Text): 
   }
 }
 
-function join_text(this: MaybeStack, separator: Text): Text {
-  join_text_inner("", this, separator)
+function join_text(this: List, separator: Text): Text {
+  let this_count = this>>count()
+  branch {
+    equals(0, this_count) => ""
+    equals(1, this_count) => this>>nth(1)
+    else => {
+      let variable current = this>>nth(1)
+      let variable index = 2
+      loop {
+        set current = current>>append(separator)>>append(list>>nth(index))
+
+        set index = index>>add(1)
+        branch {
+          index>>greater_than(this_count) => break
+          else => {}
+        }
+      }
+      current
+    }
+  }
 }

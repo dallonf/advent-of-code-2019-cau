@@ -1,109 +1,45 @@
 import core/math (add)
-import core/stopgap/collections (Stack, MaybeStack, Empty)
+import core/stopgap/collections (List, Empty, count, nth, append)
+import ./range (count_inclusive)
 
-function for_each(this: MaybeStack, action: Function(it: Anything): Action) {
-  let variable current: MaybeStack = this
-  loop {
-    branch with current {
-      is Empty => break
-      is Stack as current_stack {
-        action(current_stack.top)
-        set current = current_stack.next
-      }
-    }
-  }
-}
-
-function for_each_with_index(this: MaybeStack, callback: Function(it: Anything, index: Number): Action) {
-  let variable index = 0
-  signal Increment: Action
-  signal RequestIndex: Number
-  effect for Increment {
-    set index = add(index, 1)
-  }
-  effect for RequestIndex as request_index => index
-  for_each(this, fn(it: Anything) {
-    callback(it, cause RequestIndex)
-    cause Increment
+function for_each(this: List, action: Function(it: Anything): Action) {
+  count_inclusive(1, count(this), fn(i: Number) {
+    action(this>>nth(i))
   })
 }
 
-function map(this: MaybeStack, callback: Function(it: Anything): Anything): MaybeStack {
-  branch with this {
-    is Empty as this => this
-    is Stack as this {
-      let new_value = callback(this.top)
-      Stack(
-        new_value,
-        map(this.next, callback)
-      )
-    }
-  }
-}
-
-function map_with_index(this: MaybeStack, callback: Function(it: Anything, index: Number): Anything): MaybeStack {
-  let variable index = 0
-  signal Increment: Action
-  signal RequestIndex: Number
-  effect for Increment {
-    set index = add(index, 1)
-  }
-  effect for RequestIndex as request_index => index
-  map(this, fn(it: Anything) {
-    let result = callback(it, cause RequestIndex)
-    cause Increment
-    result
+function for_each_with_index(this: List, action: Function(it: Anything, index: Number): Action) {
+  count_inclusive(1, this>>count(), fn(i: Number) {
+    action(this>>nth(i), i)
   })
 }
 
-function fold(this: MaybeStack, initial: Anything, callback: Function(previous: Anything, next: Anything): Anything): Anything {
-  branch with this {
-    is Empty as this => initial
-    is Stack as this {
-      let new_value = callback(initial, this.top)
-      fold(this.next, new_value, callback)
-    }
-  }
+function map(this: List, callback: Function(it: Anything): Anything): List {
+  let variable new_list = List()
+  signal Append(new_value: Anything): Action
+  effect for Append as s => set new_list = new_list>>append(s.new_value)
+  for_each(this, fn(it: Anything) cause Append(callback(it)))
+  new_list
 }
 
-function at_index(this: MaybeStack, index: Number): Anything {
-  let requested_index = index
-  signal Return(value: Anything): NeverContinues
-  effect for Return as ret {
-    return ret.value
-  }
-  for_each_with_index(this, fn(it: Anything, index: Number) {
-    branch {
-      if equals(requested_index, index) => cause Return(it)
-      else => {}
-    }
+function map_with_index(this: List, callback: Function(it: Anything, index: Number): Anything): List {
+  let variable new_list = List()
+  signal Append(new_value: Anything): Action
+  effect for Append as s => set new_list = new_list>>append(s.new_value)
+  for_each_with_index(this, fn(it: Anything, index: Number) cause Append(callback(it, index)))
+  new_list
+}
+
+function fold(this: List, initial: Anything, callback: Function(previous: Anything, next: Anything): Anything): Anything {
+  let variable current = initial
+  signal ReadCurrent: Anything
+  effect for ReadCurrent => current
+  signal WriteCurrent(new_value: Anything): Action
+  effect for WriteCurrent as write_current => set current = write_current.new_value
+
+  for_each(this, fn(current: Anything) {
+    let next = callback(cause ReadCurrent, current)
+    cause WriteCurrent(next)
   })
-}
-
-function with_index_changed(this: MaybeStack, index: Number, callback: Function(previous: Anything): Anything): MaybeStack {
-  let target_index = index
-  map_with_index(this, fn(it: Anything, index: Number) {
-    branch {
-      if equals(index, target_index) => callback(it)
-      else => it
-    }
-  })
-}
-
-function with_index_set(this: MaybeStack, index: Number, new_value: Anything): MaybeStack {
-  with_index_changed(this, index, fn(previous: Anything) new_value)
-}
-
-function push(this: MaybeStack, new_value: Anything): Stack {
-  Stack(
-    new_value,
-    this
-  )
-}
-
-function peek(this: MaybeStack): Anything {
-  branch with this {
-    is Stack as this => this.top
-    is Empty => Empty
-  }
+  current
 }

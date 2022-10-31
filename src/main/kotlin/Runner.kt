@@ -30,6 +30,11 @@ class Runner(val vm: LangVm, val rootDir: Path, val window: VizWindow) {
                         RuntimeValue.Action
                     }
 
+                    vm.codeBundle.getBuiltinTypeId("TypeError") -> {
+                        val value = signal.values[0]
+                        throw Error("TypeError: ${value.debug()}}")
+                    }
+
                     vm.codeBundle.getBuiltinTypeId("AssumptionBroken") -> {
                         val value = signal.values[0] as RuntimeValue.Text
                         println(
@@ -52,7 +57,7 @@ class Runner(val vm: LangVm, val rootDir: Path, val window: VizWindow) {
                         val inputFile = rootDir.resolve("project/puzzles").resolve(path.value).toFile()
                         val lines = inputFile.readLines()
 
-                        lines.map { RuntimeValue.Text(it) }.toCauseStack(vm)
+                        RuntimeValue.StopgapList(lines.map { RuntimeValue.Text(it) })
                     }
 
                     vm.codeBundle.getTypeId("aoc/input.cau", "ParseNumber") -> {
@@ -66,7 +71,7 @@ class Runner(val vm: LangVm, val rootDir: Path, val window: VizWindow) {
                         val separator = signal.values[1] as RuntimeValue.Text
                         val result = text.value.split(separator.value)
 
-                        result.map { RuntimeValue.Text(it) }.toCauseStack(vm)
+                        RuntimeValue.StopgapList(result.map { RuntimeValue.Text(it) })
                     }
 
                     vm.codeBundle.getTypeId("aoc/interface.cau", "ReportProgress") -> {
