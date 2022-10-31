@@ -24,13 +24,9 @@ function parse_program(text: Text): List {
   program
 }
 
-function debug_memory(memory: Dictionary) {
-  let transformed_memory = map(list_entries(memory), fn(it: Anything) {
-    let kvp = branch with it {
-      is KeyValuePair as kvp2 => kvp2
-      else => cause AssumptionBroken("")
-    }
-    number_to_text(as_number(kvp.value))
+function debug_memory(memory: List) {
+  let transformed_memory = map(memory, fn(it: Anything) {
+    number_to_text(as_number(it))
   })
   cause Debug(join_text(transformed_memory, ", "))
 }
@@ -46,7 +42,7 @@ signal ReadMemory(index: Number): Number
 signal WriteMemory(index: Number, value: Number): Action
 signal Terminate: NeverContinues
 
-function run_vm(program: Dictionary): Dictionary {
+function run_vm(program: List): List {
   let variable memory = program
   let variable instruction_pointer = 0
 
@@ -104,34 +100,34 @@ function part_one() {
     let program = with_item_at_index(program, 1, 12)
     let program = with_item_at_index(program, 2, 2)
     let after_memory = run_vm(program)
-    get_item(after_memory, "0")
+    at_index(after_memory, 0)
 }
-
-function part_two() {
-  let program = parse_program(cause NeedInput("day02/puzzleinput.txt"))
-
-  signal FoundAnswer(noun: Number, verb: Number): NeverContinues
-  effect for FoundAnswer as found_answer {
-    return add(multiply(found_answer.noun, 100), found_answer.verb)
-  }
-
-  let MAX = 99
-
-  count_inclusive(0, MAX, fn(i: Number) {
-    let noun = i
-    count_inclusive(0, MAX, fn(i: Number) {
-      let verb = i
-      let modified_program = at_index(program, 1, noun)
-      let modified_program = at_index(modified_program, 2, verb)
-      let after_memory = run_vm(modified_program)
-      let result = get_item(after_memory, "0")
-      branch {
-        if equals(result, 19690720) => cause FoundAnswer(noun, verb)
-        else => {}
-      }
-    })
-    cause ReportProgress(append(append("Handled noun ", number_to_text(noun)), "..."))
-  })
-
-  cause AssumptionBroken("Couldn't find a result")
-}
+// 
+// function part_two() {
+//   let program = parse_program(cause NeedInput("day02/puzzleinput.txt"))
+// 
+//   signal FoundAnswer(noun: Number, verb: Number): NeverContinues
+//   effect for FoundAnswer as found_answer {
+//     return add(multiply(found_answer.noun, 100), found_answer.verb)
+//   }
+// 
+//   let MAX = 99
+// 
+//   count_inclusive(0, MAX, fn(i: Number) {
+//     let noun = i
+//     count_inclusive(0, MAX, fn(i: Number) {
+//       let verb = i
+//       let modified_program = at_index(program, 1, noun)
+//       let modified_program = at_index(modified_program, 2, verb)
+//       let after_memory = run_vm(modified_program)
+//       let result = get_item(after_memory, "0")
+//       branch {
+//         if equals(result, 19690720) => cause FoundAnswer(noun, verb)
+//         else => {}
+//       }
+//     })
+//     cause ReportProgress(append(append("Handled noun ", number_to_text(noun)), "..."))
+//   })
+// 
+//   cause AssumptionBroken("Couldn't find a result")
+// }
