@@ -102,32 +102,32 @@ function part_one() {
     let after_memory = run_vm(program)
     at_index(after_memory, 0)
 }
-// 
-// function part_two() {
-//   let program = parse_program(cause NeedInput("day02/puzzleinput.txt"))
-// 
-//   signal FoundAnswer(noun: Number, verb: Number): NeverContinues
-//   effect for FoundAnswer as found_answer {
-//     return add(multiply(found_answer.noun, 100), found_answer.verb)
-//   }
-// 
-//   let MAX = 99
-// 
-//   count_inclusive(0, MAX, fn(i: Number) {
-//     let noun = i
-//     count_inclusive(0, MAX, fn(i: Number) {
-//       let verb = i
-//       let modified_program = at_index(program, 1, noun)
-//       let modified_program = at_index(modified_program, 2, verb)
-//       let after_memory = run_vm(modified_program)
-//       let result = get_item(after_memory, "0")
-//       branch {
-//         if equals(result, 19690720) => cause FoundAnswer(noun, verb)
-//         else => {}
-//       }
-//     })
-//     cause ReportProgress(append(append("Handled noun ", number_to_text(noun)), "..."))
-//   })
-// 
-//   cause AssumptionBroken("Couldn't find a result")
-// }
+
+function part_two() {
+  let program = parse_program(cause NeedInput("day02/puzzleinput.txt"))
+ 
+  signal FoundAnswer(noun: Number, verb: Number): NeverContinues
+  effect for FoundAnswer as found_answer {
+    return add(multiply(found_answer.noun, 100), found_answer.verb)
+  }
+ 
+  let MAX = 99
+ 
+  count_inclusive(0, MAX, fn(i: Number) {
+    let noun = i
+    count_inclusive(0, MAX, fn(i: Number) {
+      let verb = i
+      let modified_program = with_item_at_index(program, 1, noun)
+      let modified_program = with_item_at_index(modified_program, 2, verb)
+      let after_memory = run_vm(modified_program)
+      let result = at_index(after_memory, 0)
+      branch {
+        if equals(result, 19690720) => cause FoundAnswer(noun, verb)
+        else => {}
+      }
+    })
+    cause ReportProgress("Handled noun ">>append_text(number_to_text(noun))>>append_text("..."))
+  })
+
+  cause AssumptionBroken("Couldn't find a result")
+}

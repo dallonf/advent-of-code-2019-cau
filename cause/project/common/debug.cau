@@ -1,5 +1,5 @@
 import core/text (append)
-import core/number (add, greater_than)
+import core/math (add, greater_than)
 import core/stopgap/collections (List, count, nth)
 import project/common/cast (as_text)
 import project/common/collections (fold)
