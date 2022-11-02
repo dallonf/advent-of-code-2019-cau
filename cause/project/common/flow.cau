@@ -1,0 +1,3 @@
+function pipe(this: Anything, callback: Function(it: Anything): Anything): Anything {
+  return callback(this)
+}

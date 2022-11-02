@@ -1,12 +1,16 @@
-import core/math (add)
-import core/text (append, number_to_text)
-import core/stopgap/collections (List, Empty, append, nth_last)
+import core/math (add, subtract, multiply, greater_than, less_than)
+import core/text (append as append_text, number_to_text)
+import core/stopgap/collections (List, Empty, append, nth_last, count, with_nth_item)
 import aoc/draw (
   Draw, FrameDone, Rectangle, DrawableText,
   Black, Left, Right, Center, Top,
-  Bottom, Red, RedLight
+  Bottom, Red, RedLight,
+  height
 )
-import project/common/collections (for_each)
+import project/common/collections (for_each, concat, map, fold)
+import project/common/cast (as_number, as_text)
+import project/common/debug (join_text)
+import project/common/flow (pipe)
 
 signal NewPart(mass: Number): Action
 signal AdditionalFuel(mass: Number): Action
@@ -30,29 +34,106 @@ function visualize_part_two(compute: Function(): Anything): Anything {
   function render() {
     let parts_list = cause ReadParts
     let PART_HEIGHT = 48
-    let TEXT_HEIGHT = 16
+    let TEXT_HEIGHT = 32
+    let PIXELS_PER_MASS_UNIT = 0.005
+    let LINE_HEIGHT = PART_HEIGHT>>add(TEXT_HEIGHT)
     let variable y_cursor = 0
     signal ReadYCursor: Number
     effect for ReadYCursor => y_cursor
-    signal WriteYCursor(value: Number): Action
-    effect for WriteYCursor as write => set y_cursor = write.value
+    signal NewLine: Action
+    effect for NewLine => set y_cursor = y_cursor>>add(LINE_HEIGHT)
+
+    let expected_height = count(parts_list)>>multiply(TEXT_HEIGHT>>add(PART_HEIGHT))
+    branch {
+      if expected_height>>greater_than(height()) {
+        set y_cursor = height()>>subtract(expected_height)
+      }
+      else => {}
+    }
 
     parts_list>>for_each(fn(item: Anything) {
       let item = item>>as_part_and_fuel()
       let y_cursor = cause ReadYCursor()
 
-      cause Draw(DrawableText(
-        item.initial_mass>>number_to_text(),
-        Black,
-        16,
-        8, y_cursor,
-        Top,
-        Left,
-      ))
+      branch {
+        if y_cursor>>add(LINE_HEIGHT)>>less_than(0) {}
+        else {
+          let mass_text = List()
+            >>append(item.initial_mass>>number_to_text())
+            >>concat(item.fuel>>map(fn(fuel: Anything)
+              fuel>>as_number()>>number_to_text()
+            ))
+            >>join_text(" + ")
+            >>pipe(fn(prev_text: Anything) {
+              let prev_text = prev_text>>as_text()
+              branch {
+                if count(item.fuel)>>greater_than(0) {
+                  let sum = fold(item.fuel, item.initial_mass, fn(prev: Anything, next: Anything) {
+                    prev>>as_number()>>add(next>>as_number())
+                  })>>as_number()
+                  prev_text>>append_text(" = ")>>append_text(sum>>number_to_text())
+                }
+                else => prev_text
+              }
+            })>>as_text()
 
-      let offset = PART_HEIGHT>>add(TEXT_HEIGHT)
-      let new_offset = y_cursor>>add(offset)
-      cause WriteYCursor(new_offset)
+          cause Draw(DrawableText(
+            mass_text,
+            Black,
+            16,
+            8, y_cursor,
+            Top,
+            Left,
+          ))
+
+          let variable x_cursor = 8
+          let block_y = y_cursor>>add(TEXT_HEIGHT)
+          let mass_pixels = item.initial_mass>>multiply(PIXELS_PER_MASS_UNIT)
+          cause Draw(Rectangle(
+            Red,
+            x_cursor,
+            block_y,
+            mass_pixels,
+            PART_HEIGHT
+          ))
+          set x_cursor = x_cursor>>add(item.initial_mass>>multiply(PIXELS_PER_MASS_UNIT))
+          let variable stripe: BinaryAnswer = True
+          signal Next(pixels: Number): Action
+          effect for Next as next {
+            set stripe = branch with stripe {
+              is True => False
+              is False => True
+            }
+            set x_cursor = x_cursor>>add(next.pixels)
+          }
+          object DrawState(stripe: BinaryAnswer, x_cursor: Number)
+          signal ReadDrawState: DrawState
+          effect for ReadDrawState => DrawState(stripe, x_cursor)
+          
+          for_each(item.fuel, fn(fuel: Anything) {
+            let fuel = fuel>>as_number()
+            let pixels = fuel>>multiply(PIXELS_PER_MASS_UNIT)
+            let draw_state = cause ReadDrawState
+            cause Draw(Rectangle(
+              branch {
+                if draw_state.stripe>>equals(True) => RedLight
+                if draw_state.stripe>>equals(False) => Red
+                else => {
+                  cause Debug(draw_state)
+                  cause AssumptionBroken("broken boolean")
+                }
+              },
+              draw_state.x_cursor,
+              block_y,
+              pixels,
+              PART_HEIGHT
+            ))
+            cause Next(pixels)
+          })
+        }
+      }
+
+      cause NewLine
     })
 
     cause FrameDone
@@ -75,6 +156,7 @@ function visualize_part_two(compute: Function(): Anything): Anything {
           part.initial_mass,
           part.fuel>>append(additional_fuel.mass)
         )
+        set parts_list = parts_list>>with_nth_item(parts_list>>count(), updated_part)
       }
     }
     render()
