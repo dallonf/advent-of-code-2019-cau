@@ -40,8 +40,7 @@ fun main(args: Array<String>) {
 
             val runner = Runner(
                 LangVm(
-                    codeLoader.builder.build(),
-                    LangVm.Options(debugInstructionLevelExecution = debugVm ?: false)
+                    codeLoader.builder.build(), LangVm.Options(debugInstructionLevelExecution = debugVm ?: false)
                 ), rootDirPath, window
             )
             filesToWatch = runner.vm.codeBundle.files.keys.mapNotNull { file ->
@@ -57,16 +56,15 @@ fun main(args: Array<String>) {
                 println("Found errors:")
                 for (error in compileErrors) {
                     println()
-                    println(error.debug())
+                    println("in ${error.position.path} at line ${error.position.position.start}")
                     val file = runner.vm.codeBundle.files[error.position.path]!!
                     val source = file.debugCtx?.getSourceContext(error.position.breadcrumbs)
                     if (source != null) {
                         println("```")
                         print(source)
                         println("```")
-                    } else {
-                        println("Can't show error for ${file.path}")
                     }
+                    println(error.error.friendlyMessage(null))
                 }
                 print(Ansi.ansi().reset())
             }
@@ -88,9 +86,7 @@ fun main(args: Array<String>) {
         val pathsToWatch = filesToWatch.map { it.parent }.toSet()
         val watchKeys = pathsToWatch.associateBy { dir ->
             dir.register(
-                watchService,
-                StandardWatchEventKinds.ENTRY_MODIFY,
-                StandardWatchEventKinds.ENTRY_DELETE
+                watchService, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE
             )
         }
 
