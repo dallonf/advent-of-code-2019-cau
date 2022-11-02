@@ -3,6 +3,7 @@ import com.dallonf.ktcause.Debug.debug
 import com.dallonf.ktcause.LangVm
 import com.dallonf.ktcause.RunResult
 import com.dallonf.ktcause.RuntimeValue
+import com.dallonf.ktcause.ast.SourcePosition
 import org.fusesource.jansi.Ansi
 import java.nio.file.Path
 
@@ -31,8 +32,18 @@ class Runner(val vm: LangVm, val rootDir: Path, val window: VizWindow) {
                     }
 
                     vm.codeBundle.getBuiltinTypeId("TypeError") -> {
-                        val value = signal.values[0]
-                        throw Error("TypeError: ${value.debug()}}")
+                        val value = signal.values[0] as RuntimeValue.BadValue
+                        val position = when (val pos = value.position) {
+                            is SourcePosition.Export -> " at ${pos.path} (${pos.exportName})"
+                            is SourcePosition.Source -> " at ${pos.path} line ${pos.position.start}"
+                            null -> null
+                        }
+
+                        println(
+                            Ansi.ansi().fg(Ansi.Color.RED)
+                                .render("TypeError${position ?: ""}:\n  ${value.error.friendlyMessage(null)}").reset()
+                        )
+                        break
                     }
 
                     vm.codeBundle.getBuiltinTypeId("AssumptionBroken") -> {
@@ -104,8 +115,7 @@ class Runner(val vm: LangVm, val rootDir: Path, val window: VizWindow) {
             (executionState as? RunResult.Returned)?.returnValue
         } catch (err: Throwable) {
             println(
-                Ansi.ansi().fg(Ansi.Color.RED).render(vm.getExecutionTrace())
-                    .render(err.stackTraceToString()).reset()
+                Ansi.ansi().fg(Ansi.Color.RED).render(vm.getExecutionTrace()).render(err.stackTraceToString()).reset()
             )
             null
         }
@@ -116,7 +126,14 @@ class Runner(val vm: LangVm, val rootDir: Path, val window: VizWindow) {
 
         println("Done in ${elapsedMs}ms")
         if (returnVal != null && returnVal !is RuntimeValue.Action) {
-            println("Result: ${returnVal.debug()}")
+            if (returnVal is RuntimeValue.BadValue) {
+                println(
+                    Ansi.ansi().fg(Ansi.Color.RED).render("Result:\n  ${returnVal.error.friendlyMessage(null)}}")
+                        .reset()
+                )
+            } else {
+                println("Result: ${returnVal.debug()}")
+            }
         }
     }
 }
