@@ -46,10 +46,10 @@ function fold(this: List, initial: Anything, callback: Function(previous: Anythi
 
 function concat(this: List, other: List): List {
   let variable result = this
-  signal Concat(item: Anything): Action
-  effect for Concat as s {
+  signal Append(item: Anything)
+  effect for Append as s {
     set result = result>>append(s.item)
   }
-  for_each(other, fn(item: Anything) cause Concat(item))
+  for_each(other, fn(item: Anything) cause Append(item))
   result
 }
