@@ -97,7 +97,7 @@ function visualize_part_two(compute: Function(): Anything): Anything {
             PART_HEIGHT
           ))
           set x_cursor = x_cursor>>add(item.initial_mass>>multiply(PIXELS_PER_MASS_UNIT))
-          let variable stripe: BinaryAnswer = True
+          let variable stripe: TrueOrFalse = True
           signal Next(pixels: Number): Action
           effect for Next as next {
             set stripe = branch with stripe {
@@ -106,7 +106,7 @@ function visualize_part_two(compute: Function(): Anything): Anything {
             }
             set x_cursor = x_cursor>>add(next.pixels)
           }
-          object DrawState(stripe: BinaryAnswer, x_cursor: Number)
+          object DrawState(stripe: TrueOrFalse, x_cursor: Number)
           signal ReadDrawState: DrawState
           effect for ReadDrawState => DrawState(stripe, x_cursor)
           
